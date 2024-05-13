@@ -85,8 +85,14 @@ bot.once('spawn', () => {
       console.log('Bot is facing:', direction);
     } else if (message === 'stop') {
       bot.pathfinder.stop()
-    }  else if (message === 'inventory') {
-      checkCobblestoneQuantity()
+    } else if (message === '!sleep') {
+      // Turn the bot 90 degrees
+      gotoBed()
+    }  else if (message === '!sleep') {
+      // Turn the bot 90 degrees
+      gotoBed()
+    } else if (message === '!deposit') {
+      deposit()
     } else if(message.startsWith('!build')) {
         //
         steps = 0
@@ -140,7 +146,7 @@ function getFacingDirection() {
 
 
 /*************************************************************
- *              bridge loop north
+ *              bridge 
  *************************************************************/
 async function bridgeLoop (x, y, z, direction) {
   
@@ -236,3 +242,62 @@ const offsets = {
         next: { x: -1, y: 1, z: -1 }
     },
 };
+
+
+/*************************************************************
+ *              bridge 
+ *************************************************************/
+
+function gotoBed() {
+
+  let bed = bot.findBlock({
+      matching: block=>bot.isABed(block),
+  });
+
+  if (!bed) {
+      console.log("Couldn't find bed.");
+  }
+  bot.pathfinder.goto(new GoalNear(bed.position.x, bed.position.y, bed.position.z, 1)).then(() => goToSleep(bed));
+
+}
+
+async function goToSleep(bed) {
+  try {
+    await bot.sleep(bed) 
+    bot.chat("I'm going to sleep. Nighty night.")
+    console.log("I'm going to sleep. Nighty night.")
+  } catch (err) {
+    console.log(`I can't sleep: ${err.message}`)
+    // anti-pattern - using exception handling for normal program flow
+  }
+
+}
+
+/*************************************************************
+ *              depositing in chest
+ *************************************************************/
+ 
+function deposit() {
+  const id = [bot.registry.blocksByName["chest"].id]
+  const chestBlock = bot.findBlock({ matching: id })
+
+  if (!chestBlock) {
+      console.log("Chest not found. I am giving up.");
+      return;
+  }
+  bot.pathfinder.goto(new GoalNear(chestBlock.position.x, chestBlock.position.y, chestBlock.position.z, 1)).then(() => depositInChest(chestBlock, "cobblestone"));
+}
+
+async function depositInChest(chestBlock,name) {
+
+  let chest = await bot.openChest(chestBlock)  
+  for (slot of bot.inventory.slots) {
+    if (slot && slot.name == name) {
+      await chest.deposit(slot.type, null, slot.count);
+      console.log("deposited " + slot.count + " " + name + " units");
+    }
+  }
+
+  chest.close();
+
+}
