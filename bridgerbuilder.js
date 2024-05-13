@@ -159,8 +159,15 @@ async function placeBridgeBlock(position, direction) {
     steps++
     console.log("block position = " + position)
     console.log("direction = " + direction)
-    if((checkCobblestoneQuantity()) > 1) {
-      await bot.equip(bot.registry.itemsByName.cobblestone.id, 'hand')
+    //if((checkCobblestoneQuantity()) > 1) {
+    if(true) {
+      try {
+        await bot.equip(bot.registry.itemsByName.cobblestone.id, 'hand')
+      } catch (err) {
+        console.log(`unable to equip dirt: ${err.message}`)
+        setTimeout(() => noInventory(), 250)
+      }
+      
       if(position == "middle") {
         let block = bot.blockAt(bot.entity.position.offset(tempOffset.middle.x, tempOffset.middle.y, tempOffset.middle.z))
         await bot.placeBlock(block, new Vec3(tempOffset.place.x, tempOffset.place.y, tempOffset.place.z))
@@ -192,7 +199,7 @@ function checkCobblestoneQuantity() {
 
 
 function noInventory() {
-  
+  console.log("noInventory")
   //bot.pathfinder.setGoal(new GoalNear(startPosition.position))
 }
 
