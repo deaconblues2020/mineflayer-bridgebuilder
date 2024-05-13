@@ -11,6 +11,7 @@ const bot = mineflayer.createBot({
 
 let startPosition = null
 let steps = 0
+let stepLimit = 0
 
 bot.loadPlugin(pathfinder)
 
@@ -96,6 +97,9 @@ bot.once('spawn', () => {
           //const direction = getFacingDirection();
           const direction = cmd[1]
           console.log('Bot is facing:', direction);
+
+          stepLimit = parseInt(cmd[2], 10)
+          console.log('# of steps:', steps);
           bridgeLoop (block.position.x, block.position.y, block.position.z, direction)
         } else {
             console.log("block does not exist at 12, -56, -1.  Time to chill out")
@@ -140,7 +144,7 @@ function getFacingDirection() {
  *************************************************************/
 async function bridgeLoop (x, y, z, direction) {
   
-        if (steps > 10) {
+        if (steps > stepLimit) {
             console.log("mission accomplished ")
             // go back to origin ?
             return
@@ -160,15 +164,15 @@ async function placeBridgeBlock(position, direction) {
       if(position == "middle") {
         let block = bot.blockAt(bot.entity.position.offset(tempOffset.middle.x, tempOffset.middle.y, tempOffset.middle.z))
         await bot.placeBlock(block, new Vec3(tempOffset.place.x, tempOffset.place.y, tempOffset.place.z))
-        setTimeout(() => placeBridgeBlock("right", direction),500)
+        setTimeout(() => placeBridgeBlock("right", direction),300)
       } else if(position == "right") {
         let block = bot.blockAt(bot.entity.position.offset(tempOffset.right.x, tempOffset.right.y, tempOffset.right.z))
         await bot.placeBlock(block, new Vec3(tempOffset.place.x, tempOffset.place.y, tempOffset.place.z))
-        setTimeout(() => placeBridgeBlock("left", direction),500)
+        setTimeout(() => placeBridgeBlock("left", direction),300)
       } else if(position == "left") {
         let block = bot.blockAt(bot.entity.position.offset(tempOffset.left.x, tempOffset.left.y, tempOffset.left.z))
         await bot.placeBlock(block, new Vec3(tempOffset.place.x, tempOffset.place.y, tempOffset.place.z))
-        setTimeout(() => bridgeLoop(block.position.x + tempOffset.next.x, block.position.y + tempOffset.next.y, block.position.z + tempOffset.next.z, direction), 1000)
+        setTimeout(() => bridgeLoop(block.position.x + tempOffset.next.x, block.position.y + tempOffset.next.y, block.position.z + tempOffset.next.z, direction), 700)
         
       } 
     } else {
